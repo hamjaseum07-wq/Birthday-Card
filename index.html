@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday Interactive Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Fredoka:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --crimson: #8B0000;
+      --crimson-bright: #9E1B1B;
+      --gingham-pink: #E67E8A;
+      --gingham-red: #D44D5C;
+      --grid-line: rgba(180, 195, 210, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f8e1e4;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Red-and-White Gingham Checkered Outer Frame */
+    .gingham-frame {
+      position: fixed;
+      inset: 0;
+      background-color: #ffffff;
+      background-image:
+        linear-gradient(90deg, rgba(212, 77, 92, 0.45) 50%, transparent 50%),
+        linear-gradient(rgba(212, 77, 92, 0.45) 50%, transparent 50%);
+      background-size: 36px 36px;
+      padding: clamp(14px, 2.6vw, 28px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* White Graph-Paper Inner Card */
+    .graph-canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: 1320px;
+      max-height: 820px;
+      background-color: #ffffff;
+      border-radius: 26px;
+      box-shadow:
+        0 14px 35px rgba(139, 0, 0, 0.16),
+        inset 0 0 0 2px rgba(212, 77, 92, 0.18);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 26px 26px;
+      background-position: center center;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Typography Helpers */
+    .font-script {
+      font-family: 'Dancing Script', cursive;
+    }
+    .font-serif-title {
+      font-family: 'Playfair Display', serif;
+    }
+    .font-fredoka {
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    /* Tactile Crimson Pill Button */
+    .pill-btn {
+      background: #ffffff;
+      color: var(--crimson);
+      border: 2.5px solid var(--crimson);
+      border-radius: 9999px;
+      box-shadow: 0 5px 0 var(--crimson);
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease, background-color 0.15s ease;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+    }
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 var(--crimson);
+      background-color: #fffafa;
+    }
+    .pill-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 var(--crimson);
+    }
+
+    /* Soft Elevated YES / NO Pill Buttons */
+    .choice-btn {
+      background: #ffffff;
+      border-radius: 9999px;
+      border: 1.5px solid #f0e4e6;
+      box-shadow: 0 6px 16px rgba(139, 0, 0, 0.1), 0 3px 0 rgba(139, 0, 0, 0.08);
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .choice-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 10px 20px rgba(139, 0, 0, 0.15), 0 4px 0 rgba(139, 0, 0, 0.1);
+    }
+    .choice-btn:active {
+      transform: translateY(2px) scale(0.98);
+    }
+
+    /* Corner 3D Stitched Stars */
+    .corner-star-tr {
+      position: fixed;
+      top: -12px;
+      right: -12px;
+      width: clamp(95px, 12vw, 155px);
+      height: clamp(95px, 12vw, 155px);
+      z-index: 30;
+      pointer-events: none;
+      filter: drop-shadow(-4px 8px 10px rgba(80, 0, 0, 0.35));
+      transform: rotate(12deg);
+    }
+
+    .corner-star-bl {
+      position: fixed;
+      bottom: -14px;
+      left: -14px;
+      width: clamp(95px, 12vw, 155px);
+      height: clamp(95px, 12vw, 155px);
+      z-index: 30;
+      pointer-events: none;
+      filter: drop-shadow(4px -6px 10px rgba(80, 0, 0, 0.35));
+      transform: rotate(-16deg);
+    }
+
+    /* Animations */
+    @keyframes flicker {
+      0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+      25% { transform: scale(1.08, 0.94) rotate(2deg); opacity: 0.92; }
+      50% { transform: scale(0.95, 1.07) rotate(-1deg); opacity: 1; }
+      75% { transform: scale(1.05, 0.96) rotate(3deg); opacity: 0.95; }
+    }
+    .candle-flame {
+      transform-origin: 50% 90%;
+      animation: flicker 0.9s infinite ease-in-out;
+    }
+
+    @keyframes smokeRise {
+      0% { opacity: 0; transform: translateY(4px) scale(0.7); }
+      30% { opacity: 0.75; }
+      100% { opacity: 0; transform: translateY(-28px) scale(1.3) translateX(6px); }
+    }
+    .smoke-wisp {
+      animation: smokeRise 2.2s infinite ease-out;
+    }
+    .smoke-wisp-delay {
+      animation: smokeRise 2.2s 0.7s infinite ease-out;
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+    .animate-float {
+      animation: floatSlow 3s ease-in-out infinite;
+    }
+
+    @keyframes giftBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      25% { transform: translateY(-8px) rotate(-2.5deg) scale(1.02); }
+      50% { transform: translateY(0) rotate(0deg) scale(1); }
+      75% { transform: translateY(-5px) rotate(2.5deg) scale(1.01); }
+    }
+    .animate-gift {
+      animation: giftBounce 2.6s ease-in-out infinite;
+    }
+
+    @keyframes pulseHeart {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .animate-heart-pulse {
+      transform-origin: center;
+      animation: pulseHeart 1.5s ease-in-out infinite;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.86) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .screen-enter {
+      animation: popIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes angryShake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-2deg); }
+      40% { transform: rotate(2deg); }
+      60% { transform: rotate(-1.5deg); }
+      80% { transform: rotate(1.5deg); }
+    }
+    .animate-angry {
+      animation: angryShake 2.4s ease-in-out infinite;
+    }
+
+    @keyframes envelopeOpen {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.06) rotate(-1.5deg); }
+      100% { transform: scale(0.92) translateY(-18px); opacity: 0; }
+    }
+    .envelope-opening {
+      animation: envelopeOpen 0.55s ease-in forwards;
+    }
+
+    /* Confetti burst animation */
+    @keyframes confettiPop {
+      0% { transform: scale(0.3) translate(10px, 10px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: scale(1.05) translate(-4px, -4px); opacity: 1; }
+    }
+    .bunny-appear {
+      animation: confettiPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Outer Red & White Gingham Checkered Frame -->
+  <div class="gingham-frame">
+    
+    <!-- Top-Right 3D Stitched Crimson Star -->
+    <svg class="corner-star-tr" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="starGrad1" x1="15" y1="15" x2="105" y2="105" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A81414" />
+          <stop offset="50%" stop-color="#7A0606" />
+          <stop offset="100%" stop-color="#4D0000" />
+        </linearGradient>
+      </defs>
+      <path d="M60 6L74.5 41.2L112.5 44.2L83.5 68.8L92.4 106L60 86L27.6 106L36.5 68.8L7.5 44.2L45.5 41.2L60 6Z" fill="url(#starGrad1)" stroke="#520000" stroke-width="2" stroke-linejoin="round"/>
+      <!-- Stitched dashed inner outline -->
+      <path d="M60 15L72 44.2L103.5 46.7L79.5 67.1L86.8 97.8L60 81.3L33.2 97.8L40.5 67.1L16.5 46.7L48 44.2L60 15Z" stroke="#E899A2" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round" opacity="0.85"/>
+    </svg>
+
+    <!-- Bottom-Left 3D Stitched Crimson Star -->
+    <svg class="corner-star-bl" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="starGrad2" x1="15" y1="15" x2="105" y2="105" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A81414" />
+          <stop offset="55%" stop-color="#7A0606" />
+          <stop offset="100%" stop-color="#4A0000" />
+        </linearGradient>
+      </defs>
+      <path d="M60 6L74.5 41.2L112.5 44.2L83.5 68.8L92.4 106L60 86L27.6 106L36.5 68.8L7.5 44.2L45.5 41.2L60 6Z" fill="url(#starGrad2)" stroke="#520000" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M60 15L72 44.2L103.5 46.7L79.5 67.1L86.8 97.8L60 81.3L33.2 97.8L40.5 67.1L16.5 46.7L48 44.2L60 15Z" stroke="#E899A2" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round" opacity="0.85"/>
+    </svg>
+
+    <!-- Main White Graph-Paper Card Canvas -->
+    <main class="graph-canvas" id="app-canvas">
+      
+      <!-- Top-Left Persistent Floating Controls -->
+      <div class="absolute top-3 left-3 sm:top-5 sm:left-6 z-20 flex items-center gap-2 sm:gap-2.5">
+        <!-- Sound Toggle Button -->
+        <button id="sound-toggle-btn" onclick="toggleSound()" title="Toggle Sound Effects"
+          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-[#8B0000] hover:bg-red-50 active:scale-95 transition">
+          <svg id="sound-icon-on" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="sound-icon-off" class="w-5 h-5 hidden text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Edit Text Pill Button -->
+        <button onclick="openEditModal()"
+          class="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-white border border-gray-200 shadow-md flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#8B0000] hover:border-red-200 hover:bg-red-50/40 active:scale-95 transition">
+          <svg class="w-3.5 h-3.5 text-[#8B0000]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          </svg>
+          <span>Edit Text</span>
+        </button>
+      </div>
+
+      <!-- Top Bunting Banners (Shown on Screens 1, 4, 5, 6, 7) -->
+      <div id="top-bunting" class="w-full flex justify-between items-start pointer-events-none px-2 sm:px-8 pt-0 z-10 transition-opacity duration-300">
+        <!-- Left Bunting -->
+        <svg class="w-40 sm:w-64 md:w-80 h-auto -ml-2" viewBox="0 0 320 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M-5 8 Q 145 68 310 22" stroke="#8B0000" stroke-width="1.8" fill="none"/>
+          <!-- Flags -->
+          <polygon points="18,16 44,24 26,46" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <circle cx="29" cy="28" r="2" fill="#8B0000"/>
+          <polygon points="56,27 84,33 65,57" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <path d="M65 37 L74 39 M67 43 L72 44" stroke="#8B0000" stroke-width="1.3"/>
+          <polygon points="96,35 125,39 107,64" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <circle cx="110" cy="46" r="2.2" fill="#8B0000"/>
+          <polygon points="138,40 167,41 151,67" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <path d="M148 48 L157 48" stroke="#8B0000" stroke-width="1.4"/>
+          <polygon points="180,41 209,39 195,65" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <circle cx="195" cy="49" r="2" fill="#8B0000"/>
+          <polygon points="222,38 250,33 238,59" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <polygon points="262,31 288,25 278,50" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+        </svg>
+
+        <!-- Right Bunting -->
+        <svg class="w-40 sm:w-64 md:w-80 h-auto -mr-2" viewBox="0 0 320 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 22 Q 175 68 325 8" stroke="#8B0000" stroke-width="1.8" fill="none"/>
+          <polygon points="32,25 58,31 42,50" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <polygon points="70,33 98,38 82,59" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <circle cx="84" cy="43" r="2" fill="#8B0000"/>
+          <polygon points="111,39 140,41 125,65" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <polygon points="153,41 182,40 169,67" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <path d="M163 48 L172 48" stroke="#8B0000" stroke-width="1.4"/>
+          <polygon points="195,39 224,35 213,64" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <circle cx="210" cy="46" r="2.2" fill="#8B0000"/>
+          <polygon points="236,33 264,27 255,57" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+          <polygon points="276,24 302,16 294,46" fill="#fff" stroke="#8B0000" stroke-width="1.6"/>
+        </svg>
+      </div>
+
+      <!-- Dynamic Screen Container -->
+      <div id="screen-container" class="flex-1 w-full flex flex-col items-center justify-center px-4 sm:px-10 pb-6 pt-2 relative z-10 overflow-y-auto">
+        <!-- Screens injected via JS -->
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Edit Text Customization Modal -->
+  <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl border-2 border-[#8B0000] shadow-2xl w-full max-w-lg overflow-hidden animate-popIn">
+      <div class="bg-red-50/80 px-6 py-4 border-b border-red-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">✏️</span>
+          <h3 class="font-fredoka text-lg font-bold text-[#8B0000]">Customize Card Text</h3>
+        </div>
+        <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:text-[#8B0000] flex items-center justify-center shadow-xs font-bold">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4 max-h-[68vh] overflow-y-auto font-quicksand">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Script Title (Screen 1)</label>
+            <input id="inp-s1Script" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Main Title (Screen 1)</label>
+            <input id="inp-s1Main" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Wish Prompt (Screen 1)</label>
+          <input id="inp-wishLabel" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Birthday Greeting (Screen 2)</label>
+            <input id="inp-s2Title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Gift Question (Screen 2)</label>
+            <input id="inp-s2Sub" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Warning Title (Screen 3)</label>
+            <input id="inp-s3Title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Envelope Prompt (Screen 4)</label>
+            <input id="inp-s4Title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Hug Card Top (Screen 5)</label>
+            <input id="inp-s5Top" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Hug Card Bottom (Screen 5)</label>
+            <input id="inp-s5Bottom" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Phone Hug Message (Screen 6)</label>
+            <input id="inp-s6Title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Finale Bouquet Header (Screen 7)</label>
+            <input id="inp-s7Title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Heart Note Quote (Screen 7)</label>
+          <input id="inp-s7Quote" type="text" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-[#8B0000] focus:outline-none text-sm font-semibold text-gray-800" />
+        </div>
+      </div>
+
+      <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
+        <button onclick="resetCustomText()" class="px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-gray-600 hover:text-[#8B0000] hover:bg-red-50 transition">
+          Reset Default
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="closeEditModal()" class="px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 transition">
+            Cancel
+          </button>
+          <button onclick="saveCustomText()" class="pill-btn px-5 py-2 text-xs sm:text-sm">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. STATE & EDITABLE CONTENT CONFIGURATION
+    // ==========================================
+    const DEFAULT_TEXT = {
+      s1Script: "Happy",
+      s1Main: "BIRTHDAY",
+      wishLabel: "Make a wish",
+      blowBtn: "Blow",
+      nextBtn: "next",
+      s2Title: "Happy birthday Nazrana 🩷",
+      s2Sub: "do you wanna open your gift",
+      yesBtn: "YES",
+      noBtn: "NO",
+      s3Title: "how dare you???",
+      tryAgainBtn: "TRY AGAIN",
+      s4Title: "Tap to open",
+      openSeal: "OPEN",
+      s5Top: "I LOVE YOU",
+      s5Bottom: "Thiiiiiiiis MUCH MUCH ❤️",
+      s6Title: "Hugging you through my phone",
+      s7Title: "Flowers for you Culbuli 💐",
+      s7Quote: "“You’re perfect.”",
+      replayBtn: "Replay"
+    };
+
+    let cardText = { ...DEFAULT_TEXT };
+    let currentScreen = 1;
+    let candleBlown = false;
+    let soundEnabled = true;
+
+    // ==========================================
+    // 2. WEB AUDIO API CUTE SOUND SYNTHESIZER
+    // ==========================================
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'click') {
+          // Cute bubbly pop
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } else if (type === 'blow') {
+          // Soft wind whoosh + celebratory arpeggio chime
+          const bufferSize = ctx.sampleRate * 0.35;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+          }
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(420, now);
+          const noiseGain = ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.18, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          noise.connect(filter);
+          filter.connect(noiseGain);
+          noiseGain.connect(ctx.destination);
+          noise.start(now);
+
+          // Party horn & sparkly chimes
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + 0.15 + idx * 0.07);
+            g.gain.setValueAtTime(0.14, now + 0.15 + idx * 0.07);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.45 + idx * 0.07);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now + 0.15 + idx * 0.07);
+            osc.stop(now + 0.46 + idx * 0.07);
+          });
+        } else if (type === 'angry') {
+          // Dramatic low bonk!
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.exponentialRampToValueAtTime(75, now + 0.28);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'magic') {
+          // Sparkle chime for envelope / finale
+          const freqs = [587.33, 739.99, 880, 1174.66, 1479.98];
+          freqs.forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + i * 0.06);
+            g.gain.setValueAtTime(0.12, now + i * 0.06);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.36);
+          });
+        }
+      } catch (e) {
+        // Ignore audio context autoplay restrictions silently
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon-on').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('sound-icon-off').classList.toggle('hidden', soundEnabled);
+      if (soundEnabled) playSound('click');
+    }
+
+    // ==========================================
+    // 3. REUSABLE DOODLE SVG HELPERS
+    // ==========================================
+    function floatingHeartsSVG() {
+      return `
+        <svg class="w-14 h-14 mx-auto animate-float" viewBox="0 0 70 70" fill="none">
+          <path d="M22 18 C22 14, 15 14, 15 19 C15 24, 22 28, 22 28 C22 28, 29 24, 29 19 C29 14, 22 14, 22 18 Z" stroke="#8B0000" stroke-width="1.5" fill="none"/>
+          <path d="M46 25 C46 22, 41 22, 41 26 C41 30, 46 33, 46 33 C46 33, 51 30, 51 26 C51 22, 46 22, 46 25 Z" stroke="#8B0000" stroke-width="1.4" fill="none"/>
+          <path d="M31 44 C31 40, 24 40, 24 45 C24 50, 31 55, 31 55 C31 55, 38 50, 38 45 C38 40, 31 40, 31 44 Z" stroke="#8B0000" stroke-width="1.5" fill="none"/>
+        </svg>
+      `;
+    }
+
+    // ==========================================
+    // 4. SCREEN RENDERERS (7 EXACT SCREENS)
+    // ==========================================
+    function goToScreen(num) {
+      currentScreen = num;
+      const bunting = document.getElementById('top-bunting');
+      // Hide bunting on Screens 2 & 3 just like the video
+      if (num === 2 || num === 3) {
+        bunting.style.opacity = '0';
+        bunting.style.height = '18px';
+      } else {
+        bunting.style.opacity = '1';
+        bunting.style.height = 'auto';
+      }
+      renderScreen();
+    }
+
+    function handleBlowCandle() {
+      if (!candleBlown) {
+        candleBlown = true;
+        playSound('blow');
+        renderScreen(false);
+      }
+    }
+
+    function handleOpenEnvelope() {
+      playSound('magic');
+      const env = document.getElementById('envelope-box');
+      if (env) {
+        env.classList.add('envelope-opening');
+        setTimeout(() => goToScreen(5), 480);
+      } else {
+        goToScreen(5);
+      }
+    }
+
+    function handleReplay() {
+      playSound('click');
+      candleBlown = false;
+      goToScreen(1);
+    }
+
+    function renderScreen(animate = true) {
+      const container = document.getElementById('screen-container');
+      const animClass = animate ? 'screen-enter' : '';
+
+      if (currentScreen === 1) {
+        container.innerHTML = `
+          <div class="w-full max-w-5xl flex flex-col items-center justify-between h-full py-1 sm:py-2 ${animClass}">
+            <!-- Header: Happy BIRTHDAY -->
+            <div class="text-center -mt-2 sm:-mt-6">
+              <div class="font-script text-5xl sm:text-7xl md:text-[5.2rem] text-[#8B0000] leading-none tracking-wide">
+                ${escapeHtml(cardText.s1Script)}
+              </div>
+              <div class="font-serif-title text-3xl sm:text-5xl md:text-[3.4rem] text-[#8B0000] tracking-[0.14em] font-medium mt-1">
+                ${escapeHtml(cardText.s1Main)}
+              </div>
+            </div>
+
+            <!-- Middle 3-Column Stage -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-6 md:gap-4 my-auto px-2 sm:px-6">
+              
+              <!-- Left Column: Make a wish + Blow / next button + Hearts -->
+              <div class="flex flex-col items-center justify-center order-2 md:order-1">
+                ${!candleBlown ? `
+                  <p class="font-fredoka text-xl sm:text-2xl text-[#6e1414] font-medium mb-3 tracking-wide">
+                    ${escapeHtml(cardText.wishLabel)}
+                  </p>
+                  <button onclick="handleBlowCandle()" class="pill-btn px-10 py-2.5 text-lg sm:text-xl">
+                    ${escapeHtml(cardText.blowBtn)}
+                  </button>
+                ` : `
+                  <div class="h-8 mb-2"></div>
+                  <button onclick="playSound('click'); goToScreen(2)" class="pill-btn px-11 py-2.5 text-lg sm:text-xl">
+                    ${escapeHtml(cardText.nextBtn)}
+                  </button>
+                `}
+                <div class="mt-3">
+                  ${floatingHeartsSVG()}
+                </div>
+              </div>
+
+              <!-- Center Column: 3-Tier Hand-Drawn Birthday Cake -->
+              <div class="flex flex-col items-center justify-center order-1 md:order-2">
+                <svg class="w-56 sm:w-64 md:w-72 h-auto" viewBox="0 0 280 265" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Floating Outline Hearts around Cake -->
+                  <path d="M58 95 C58 89, 48 89, 48 96 C48 103, 58 109, 58 109 C58 109, 68 103, 68 96 C68 89, 58 89, 58 95 Z" stroke="#8B0000" stroke-width="1.6"/>
+                  <path d="M78 65 C78 60, 70 60, 70 66 C70 72, 78 77, 78 77 C78 77, 86 72, 86 66 C86 60, 78 60, 78 65 Z" stroke="#8B0000" stroke-width="1.5"/>
+                  <path d="M202 58 C202 53, 194 53, 194 59 C194 65, 202 70, 202 70 C202 70, 210 65, 210 59 C210 53, 202 53, 202 58 Z" stroke="#8B0000" stroke-width="1.5"/>
+                  <path d="M225 82 C225 76, 215 76, 215 83 C215 90, 225 96, 225 96 C225 96, 235 90, 235 83 C235 76, 225 76, 225 82 Z" stroke="#8B0000" stroke-width="1.6"/>
+
+                  <!-- Star Topper on Stick -->
+                  <line x1="162" y1="88" x2="162" y2="118" stroke="#8B0000" stroke-width="2"/>
+                  <polygon points="162,56 167,69 181,70 170,79 173,92 162,85 151,92 154,79 143,70 157,69" fill="#FFFDF5" stroke="#8B0000" stroke-width="1.8" stroke-linejoin="round"/>
+
+                  <!-- Striped Birthday Candle -->
+                  <rect x="118" y="76" width="12" height="42" rx="3" fill="#fff" stroke="#8B0000" stroke-width="2"/>
+                  <line x1="118" y1="86" x2="130" y2="82" stroke="#8B0000" stroke-width="1.8"/>
+                  <line x1="118" y1="96" x2="130" y2="92" stroke="#8B0000" stroke-width="1.8"/>
+                  <line x1="118" y1="106" x2="130" y2="102" stroke="#8B0000" stroke-width="1.8"/>
+                  <!-- Wick -->
+                  <line x1="124" y1="76" x2="124" y2="69" stroke="#8B0000" stroke-width="2" stroke-linecap="round"/>
+
+                  ${!candleBlown ? `
+                    <!-- Lit Flickering Flame -->
+                    <g class="candle-flame">
+                      <path d="M124 34 C133 48, 134 62, 124 68 C114 62, 115 48, 124 34 Z" fill="#FF6B35" stroke="#8B0000" stroke-width="1.8"/>
+                      <path d="M124 46 C128 54, 128 62, 124 66 C120 62, 120 54, 124 46 Z" fill="#FFE66D"/>
+                    </g>
+                  ` : `
+                    <!-- Gentle Smoke Wisps after Blowing -->
+                    <path class="smoke-wisp" d="M124 65 Q118 53 125 43 Q131 33 123 22" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <path class="smoke-wisp-delay" d="M128 62 Q135 50 128 38" stroke="#CBD5E1" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  `}
+
+                  <!-- Top Cake Tier -->
+                  <rect x="94" y="118" width="92" height="36" rx="10" fill="#fff" stroke="#8B0000" stroke-width="2.2"/>
+                  <path d="M94 132 Q105 142 117 132 Q128 142 140 132 Q151 142 163 132 Q174 142 186 132" stroke="#8B0000" stroke-width="1.8" fill="none"/>
+
+                  <!-- Middle Cake Tier -->
+                  <rect x="72" y="154" width="136" height="42" rx="12" fill="#fff" stroke="#8B0000" stroke-width="2.2"/>
+                  <path d="M72 170 Q89 182 106 170 Q123 182 140 170 Q157 182 174 170 Q191 182 208 170" stroke="#8B0000" stroke-width="1.8" fill="none"/>
+
+                  <!-- Bottom Cake Tier -->
+                  <rect x="52" y="196" width="176" height="46" rx="14" fill="#fff" stroke="#8B0000" stroke-width="2.2"/>
+                  <path d="M52 214 Q74 226 96 214 Q118 226 140 214 Q162 226 184 214 Q206 226 228 214" stroke="#8B0000" stroke-width="1.8" fill="none"/>
+
+                  <!-- Cake Stand Plate -->
+                  <path d="M34 242 L246 242" stroke="#8B0000" stroke-width="2.6" stroke-linecap="round"/>
+                  <path d="M46 247 L234 247" stroke="#8B0000" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Right Column: Party Popper -> Transforms into Kawaii Bunny with Party Horn -->
+              <div class="flex flex-col items-center justify-center order-3">
+                ${!candleBlown ? `
+                  <svg class="w-40 sm:w-48 h-auto animate-float" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Party Popper Cone -->
+                    <polygon points="88,82 152,158 64,114" fill="#fff" stroke="#8B0000" stroke-width="2.2" stroke-linejoin="round"/>
+                    <ellipse cx="76" cy="98" rx="9" ry="20" transform="rotate(-38 76 98)" fill="#fff" stroke="#8B0000" stroke-width="2"/>
+                    <!-- Stripes on cone -->
+                    <line x1="84" y1="124" x2="106" y2="104" stroke="#8B0000" stroke-width="1.8"/>
+                    <line x1="104" y1="134" x2="122" y2="120" stroke="#8B0000" stroke-width="1.8"/>
+                    <!-- Confetti & Streamers -->
+                    <path d="M62 76 Q46 62 34 72" stroke="#8B0000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                    <path d="M74 62 Q72 42 58 34" stroke="#8B0000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                    <path d="M48 94 Q28 96 22 110" stroke="#8B0000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                    <polygon points="44,48 52,44 50,54" stroke="#8B0000" stroke-width="1.6" fill="none"/>
+                    <circle cx="32" cy="84" r="3" stroke="#8B0000" stroke-width="1.6"/>
+                    <circle cx="84" cy="44" r="2.5" fill="#8B0000"/>
+                  </svg>
+                ` : `
+                  <!-- Cute Kawaii Bunny Blowing Yellow Party Horn -->
+                  <svg class="w-44 sm:w-52 h-auto bunny-appear" viewBox="0 0 220 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Bunny Ears -->
+                    <path d="M96 86 C90 42, 108 38, 112 84" fill="#fff" stroke="#2D2A32" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M126 84 C130 38, 148 42, 142 86" fill="#fff" stroke="#2D2A32" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Bunny Head & Body -->
+                    <path d="M78 168 C74 115, 88 82, 119 82 C150 82, 164 115, 160 168" fill="#fff" stroke="#2D2A32" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Happy Closed Eyes -->
+                    <path d="M98 112 Q103 106 108 112" stroke="#2D2A32" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+                    <path d="M130 112 Q135 106 140 112" stroke="#2D2A32" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+                    <!-- Rosy Cheeks -->
+                    <ellipse cx="94" cy="122" rx="6" ry="3.5" fill="#FF9AA2" opacity="0.8"/>
+                    <ellipse cx="144" cy="122" rx="6" ry="3.5" fill="#FF9AA2" opacity="0.8"/>
+                    <!-- Yellow Party Horn -->
+                    <polygon points="116,125 60,114 60,142" fill="#FFD13B" stroke="#2D2A32" stroke-width="2.2" stroke-linejoin="round"/>
+                    <line x1="94" y1="120" x2="94" y2="132" stroke="#2D2A32" stroke-width="1.8"/>
+                    <line x1="78" y1="117" x2="78" y2="137" stroke="#2D2A32" stroke-width="1.8"/>
+                    <!-- Cute Little Paw -->
+                    <path d="M134 144 C124 140, 122 152, 134 154" stroke="#2D2A32" stroke-width="2.2" stroke-linecap="round" fill="#fff"/>
+                    <!-- Colorful Confetti Burst Rays -->
+                    <line x1="48" y1="115" x2="30" y2="106" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="46" y1="128" x2="24" y2="128" stroke="#FB7185" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="48" y1="141" x2="30" y2="150" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="34" cy="96" r="3" fill="#A78BFA"/>
+                    <circle cx="24" cy="140" r="2.8" fill="#34D399"/>
+                  </svg>
+                `}
+              </div>
+
+            </div>
+            <div class="h-2"></div>
+          </div>
+        `;
+      } else if (currentScreen === 2) {
+        container.innerHTML = `
+          <div class="w-full max-w-3xl flex flex-col items-center justify-center text-center my-auto py-4 ${animClass}">
+            <h1 class="font-fredoka text-3xl sm:text-5xl md:text-[3.2rem] font-bold text-[#8B0000] tracking-tight mb-2">
+              ${escapeHtml(cardText.s2Title)}
+            </h1>
+            <p class="font-quicksand text-lg sm:text-2xl text-[#6e1414] font-semibold mb-6 sm:mb-8">
+              ${escapeHtml(cardText.s2Sub)}
+            </p>
+
+            <!-- 3D Isometric Red & Gold Gift Box -->
+            <div class="my-2 sm:my-4 animate-gift cursor-pointer" onclick="playSound('click'); goToScreen(4)">
+              <svg class="w-44 sm:w-56 h-auto drop-shadow-xl" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Left Box Face -->
+                <polygon points="44,96 110,126 110,198 44,166" fill="#B91C1C"/>
+                <!-- Right Box Face -->
+                <polygon points="176,96 110,126 110,198 176,166" fill="#991B1B"/>
+                <!-- Vertical Gold Ribbons on Box -->
+                <polygon points="71,108 85,115 85,186 71,179" fill="#FACC15"/>
+                <polygon points="135,115 149,108 149,179 135,186" fill="#EAB308"/>
+
+                <!-- Box Lid Top -->
+                <polygon points="110,56 184,88 110,120 36,88" fill="#DC2626"/>
+                <!-- Lid Front-Left Rim -->
+                <polygon points="36,88 110,120 110,134 36,102" fill="#B91C1C"/>
+                <!-- Lid Front-Right Rim -->
+                <polygon points="184,88 110,120 110,134 184,102" fill="#7F1D1D"/>
+
+                <!-- Gold Ribbons across Lid -->
+                <polygon points="68,74 142,106 154,101 80,69" fill="#FDE047"/>
+                <polygon points="140,69 66,101 78,106 152,74" fill="#FACC15"/>
+                <!-- Lid Rim Gold Strips -->
+                <polygon points="66,101 78,106 78,120 66,115" fill="#EAB308"/>
+                <polygon points="142,106 154,101 154,115 142,120" fill="#CA8A04"/>
+
+                <!-- Lush 3D Gold Bow Loops -->
+                <path d="M110 84 C82 52, 56 68, 76 86 C90 94, 104 88, 110 84 Z" fill="#FACC15" stroke="#CA8A04" stroke-width="2"/>
+                <path d="M110 84 C138 52, 164 68, 144 86 C130 94, 116 88, 110 84 Z" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/>
+                <path d="M110 86 L86 106 L96 110 L110 92 L124 110 L134 106 Z" fill="#EAB308"/>
+                <ellipse cx="110" cy="84" rx="11" ry="8" fill="#FEF08A" stroke="#CA8A04" stroke-width="2"/>
+              </svg>
+            </div>
+
+            <!-- YES / NO Buttons -->
+            <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10 mt-6 sm:mt-8">
+              <button onclick="playSound('click'); goToScreen(4)" class="choice-btn px-7 sm:px-9 py-3 text-lg sm:text-xl text-[#16A34A]">
+                <span class="w-7 h-7 rounded-full bg-[#22C55E] text-white flex items-center justify-center shadow-xs">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span>${escapeHtml(cardText.yesBtn)}</span>
+              </button>
+
+              <button onclick="playSound('angry'); goToScreen(3)" class="choice-btn px-7 sm:px-9 py-3 text-lg sm:text-xl text-[#DC2626]">
+                <span class="w-7 h-7 rounded-full bg-[#EF4444] text-white flex items-center justify-center shadow-xs">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </span>
+                <span>${escapeHtml(cardText.noBtn)}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentScreen === 3) {
+        container.innerHTML = `
+          <div class="w-full max-w-2xl flex flex-col items-center justify-center text-center my-auto py-4 ${animClass}">
+            <h1 class="font-fredoka text-4xl sm:text-5xl md:text-6xl font-bold text-[#8B0000] tracking-tight mb-4">
+              ${escapeHtml(cardText.s3Title)}
+            </h1>
+
+            <!-- Cute Angry Yellow Duckling Holding Butter Knife -->
+            <div class="my-2 animate-angry">
+              <svg class="w-48 sm:w-56 h-auto" viewBox="0 0 220 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Duck Tuft Hair -->
+                <path d="M104 34 Q108 18 114 32 Q122 18 122 35" stroke="#2D2A32" stroke-width="2.8" stroke-linecap="round" fill="#FACC15"/>
+                <!-- Duck Body & Head -->
+                <path d="M72 195 C64 162, 72 126, 84 112 C74 96, 76 58, 96 42 C112 30, 134 34, 144 54 C154 74, 148 98, 138 112 C152 128, 158 164, 148 195 Z" fill="#FACC15" stroke="#2D2A32" stroke-width="3" stroke-linejoin="round"/>
+                
+                <!-- Anime Anger Vein Mark on Forehead -->
+                <g stroke="#EF4444" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M90 54 Q96 58 92 64"/>
+                  <path d="M102 52 Q98 58 104 62"/>
+                  <path d="M88 66 Q95 63 94 70"/>
+                  <path d="M103 68 Q98 63 100 71"/>
+                </g>
+
+                <!-- Fierce Angled Eyebrows & Eyes -->
+                <circle cx="96" cy="82" r="4.5" fill="#2D2A32"/>
+                <circle cx="128" cy="82" r="4.5" fill="#2D2A32"/>
+                <line x1="86" y1="71" x2="104" y2="79" stroke="#2D2A32" stroke-width="3.2" stroke-linecap="round"/>
+                <line x1="138" y1="71" x2="120" y2="79" stroke="#2D2A32" stroke-width="3.2" stroke-linecap="round"/>
+
+                <!-- Orange Pouting Beak -->
+                <ellipse cx="112" cy="96" rx="16" ry="8" fill="#F97316" stroke="#2D2A32" stroke-width="2.6"/>
+                <path d="M99 96 Q112 92 125 96" stroke="#2D2A32" stroke-width="2.2" fill="none"/>
+
+                <!-- Left Wing -->
+                <path d="M76 128 C60 138, 62 162, 80 162" fill="#FACC15" stroke="#2D2A32" stroke-width="2.8" stroke-linecap="round"/>
+
+                <!-- Butter Knife / Blade Held Across -->
+                <g transform="rotate(-10 112 146)">
+                  <!-- Silver Blade -->
+                  <path d="M62 138 L122 138 L122 153 L68 153 C58 153, 56 138, 62 138 Z" fill="#E5E7EB" stroke="#2D2A32" stroke-width="2.6" stroke-linejoin="round"/>
+                  <line x1="66" y1="142" x2="116" y2="142" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                  <!-- Dark Handle -->
+                  <rect x="122" y="139" width="36" height="13" rx="6" fill="#374151" stroke="#2D2A32" stroke-width="2.6"/>
+                  <circle cx="132" cy="145.5" r="1.5" fill="#D1D5DB"/>
+                  <circle cx="146" cy="145.5" r="1.5" fill="#D1D5DB"/>
+                </g>
+
+                <!-- Right Wing Gripping Handle -->
+                <path d="M138 130 C154 134, 154 156, 134 155" fill="#FACC15" stroke="#2D2A32" stroke-width="2.8" stroke-linecap="round"/>
+
+                <!-- Duck Feet -->
+                <path d="M88 195 L82 206 L102 206 L98 195" fill="#F97316" stroke="#2D2A32" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M124 195 L120 206 L140 206 L134 195" fill="#F97316" stroke="#2D2A32" stroke-width="2.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <button onclick="playSound('click'); goToScreen(2)" class="pill-btn px-9 py-3 text-lg sm:text-xl mt-4">
+              ${escapeHtml(cardText.tryAgainBtn)}
+            </button>
+          </div>
+        `;
+      } else if (currentScreen === 4) {
+        container.innerHTML = `
+          <div class="w-full max-w-4xl flex flex-col items-center justify-center my-auto py-4 ${animClass}">
+            <h2 class="font-fredoka text-3xl sm:text-5xl text-[#8B0000] font-medium mb-6 sm:mb-8 tracking-wide">
+              ${escapeHtml(cardText.s4Title)}
+            </h2>
+
+            <div class="w-full flex items-center justify-around gap-4">
+              <!-- Left Decorative Hearts -->
+              <div class="hidden sm:block">
+                ${floatingHeartsSVG()}
+              </div>
+
+              <!-- Red Envelope with White Stitched Heart Seal -->
+              <div id="envelope-box" onclick="handleOpenEnvelope()"
+                class="relative w-72 sm:w-96 aspect-[1.52/1] bg-[#A31621] rounded-md shadow-2xl cursor-pointer group transition-transform duration-300 hover:scale-105 active:scale-95 flex items-center justify-center overflow-hidden">
+                
+                <!-- Envelope Flap Lines -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 360 236" preserveAspectRatio="none">
+                  <!-- Bottom & Side Fold Shadows -->
+                  <polygon points="0,236 180,115 360,236" fill="#94121C" stroke="#6B0810" stroke-width="1.5"/>
+                  <polygon points="0,0 145,118 0,236" fill="#9E141F" stroke="#6B0810" stroke-width="1.2"/>
+                  <polygon points="360,0 215,118 360,236" fill="#9E141F" stroke="#6B0810" stroke-width="1.2"/>
+                  <!-- Top Triangular Flap -->
+                  <polygon points="0,0 180,132 360,0" fill="#B01925" stroke="#6B0810" stroke-width="1.8"/>
+                </svg>
+
+                <!-- White Stitched Heart Seal -->
+                <div class="relative z-10 mt-3 animate-heart-pulse group-hover:scale-110 transition-transform">
+                  <svg class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-md" viewBox="0 0 120 110" fill="none">
+                    <path d="M60 98 C60 98, 12 68, 12 34 C12 16, 26 6, 41 6 C51 6, 57 12, 60 18 C63 12, 69 6, 79 6 C94 6, 108 16, 108 34 C108 68, 60 98, 60 98 Z"
+                      fill="#FFFFFF" />
+                    <path d="M60 91 C60 91, 18 64, 18 34 C18 20, 29 12, 41 12 C50 12, 56 17, 60 24 C64 17, 70 12, 79 12 C91 12, 102 20, 102 34 C102 64, 60 91, 60 91 Z"
+                      stroke="#8B0000" stroke-width="1.8" stroke-dasharray="4 3" fill="none"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-fredoka font-bold text-[#8B0000] text-sm sm:text-base tracking-wider pb-1">
+                    ${escapeHtml(cardText.openSeal)}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Right Decorative Hearts -->
+              <div class="hidden sm:block">
+                ${floatingHeartsSVG()}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (currentScreen === 5) {
+        container.innerHTML = `
+          <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 items-center gap-6 my-auto py-2 ${animClass}">
+            
+            <!-- Left Column: Hearts + next button -->
+            <div class="md:col-span-3 flex flex-col items-center justify-center order-2 md:order-1">
+              <div class="mb-2">
+                ${floatingHeartsSVG()}
+              </div>
+              <button onclick="playSound('click'); goToScreen(6)" class="pill-btn px-10 py-2.5 text-lg sm:text-xl">
+                ${escapeHtml(cardText.nextBtn)}
+              </button>
+            </div>
+
+            <!-- Center Column: Framed Card with Super Long Cartoon Hug Arms -->
+            <div class="md:col-span-6 flex items-center justify-center order-1 md:order-2 relative py-4">
+              <div class="relative w-64 sm:w-72 bg-white border-[4px] border-[#8B0000] rounded-lg shadow-xl px-4 py-6 flex flex-col items-center justify-between text-center">
+                
+                <h3 class="font-fredoka text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-wide mb-2">
+                  ${escapeHtml(cardText.s5Top)}
+                </h3>
+
+                <!-- Cute White Character with Extra-Long Arms Extending Beyond Card -->
+                <div class="relative w-full h-44 flex items-center justify-center my-1">
+                  <svg class="w-[155%] max-w-none h-44 overflow-visible" viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- White Blob Body -->
+                    <path d="M168 175 C166 105, 174 52, 210 52 C246 52, 254 105, 252 175" fill="#FFFFFF" stroke="#1F2937" stroke-width="3.2" stroke-linecap="round"/>
+                    <!-- Cute Eyes & Smile -->
+                    <circle cx="198" cy="82" r="3.5" fill="#1F2937"/>
+                    <circle cx="222" cy="82" r="3.5" fill="#1F2937"/>
+                    <path d="M204 90 Q210 96 216 90" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+                    <!-- Super Long Left Arm Stretching Outside Card -->
+                    <path d="M174 114 L26 114 C16 114, 16 125, 26 125 L172 125" fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Left Hand Fingers -->
+                    <path d="M24 114 C14 110, 12 117, 20 119 C12 120, 13 127, 24 125" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
+
+                    <!-- Super Long Right Arm Stretching Outside Card -->
+                    <path d="M246 114 L394 114 C404 114, 404 125, 394 125 L248 125" fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Right Hand Fingers -->
+                    <path d="M396 114 C406 110, 408 117, 400 119 C408 120, 407 127, 396 125" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
+                  </svg>
+                </div>
+
+                <p class="font-fredoka text-lg sm:text-xl font-bold text-[#1F2937] mt-1">
+                  ${escapeHtml(cardText.s5Bottom)}
+                </p>
+              </div>
+            </div>
+
+            <!-- Right Column: Cute Grey Penguin Holding 3 Pastel Balloons -->
+            <div class="md:col-span-3 flex flex-col items-center justify-end order-3 self-end">
+              <svg class="w-40 sm:w-48 h-auto animate-float" viewBox="0 0 210 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Balloon Strings -->
+                <path d="M124 156 Q135 110 132 76" stroke="#4B5563" stroke-width="1.5" fill="none"/>
+                <path d="M124 156 Q152 115 162 86" stroke="#4B5563" stroke-width="1.5" fill="none"/>
+                <path d="M124 156 Q165 130 182 108" stroke="#4B5563" stroke-width="1.5" fill="none"/>
+
+                <!-- Pastel Balloons -->
+                <!-- Pink Balloon -->
+                <ellipse cx="132" cy="54" rx="18" ry="22" fill="#F472B6" stroke="#374151" stroke-width="1.8"/>
+                <polygon points="132,76 128,81 136,81" fill="#F472B6"/>
+                <!-- Purple Balloon -->
+                <ellipse cx="163" cy="64" rx="18" ry="22" fill="#A78BFA" stroke="#374151" stroke-width="1.8"/>
+                <polygon points="163,86 159,91 167,91" fill="#A78BFA"/>
+                <!-- Orange Balloon -->
+                <ellipse cx="184" cy="88" rx="17" ry="21" fill="#FB923C" stroke="#374151" stroke-width="1.8"/>
+                <polygon points="184,109 180,114 188,114" fill="#FB923C"/>
+
+                <!-- Penguin Body -->
+                <ellipse cx="88" cy="168" rx="38" ry="44" fill="#4B5563" stroke="#1F2937" stroke-width="2.5"/>
+                <!-- White Belly -->
+                <ellipse cx="88" cy="174" rx="26" ry="33" fill="#FFFFFF"/>
+                <!-- Left Flipper -->
+                <ellipse cx="50" cy="166" rx="8" ry="18" transform="rotate(20 50 166)" fill="#4B5563" stroke="#1F2937" stroke-width="2.2"/>
+                <!-- Right Flipper Holding Strings -->
+                <ellipse cx="122" cy="162" rx="8" ry="17" transform="rotate(-32 122 162)" fill="#4B5563" stroke="#1F2937" stroke-width="2.2"/>
+                <!-- Eyes, Cheeks, Beak -->
+                <circle cx="77" cy="150" r="3.5" fill="#1F2937"/>
+                <circle cx="99" cy="150" r="3.5" fill="#1F2937"/>
+                <ellipse cx="70" cy="157" rx="5" ry="3" fill="#FDA4AF"/>
+                <ellipse cx="106" cy="157" rx="5" ry="3" fill="#FDA4AF"/>
+                <polygon points="83,155 93,155 88,162" fill="#FBBF24" stroke="#1F2937" stroke-width="1.5"/>
+                <!-- Orange Feet -->
+                <ellipse cx="74" cy="212" rx="11" ry="5" fill="#F59E0B" stroke="#1F2937" stroke-width="2"/>
+                <ellipse cx="102" cy="212" rx="11" ry="5" fill="#F59E0B" stroke="#1F2937" stroke-width="2"/>
+              </svg>
+            </div>
+
+          </div>
+        `;
+      } else if (currentScreen === 6) {
+        container.innerHTML = `
+          <div class="w-full max-w-5xl flex flex-col items-center justify-between my-auto py-2 ${animClass}">
+            <h2 class="font-fredoka text-2xl sm:text-4xl md:text-[2.6rem] font-bold text-[#1F2937] text-center mb-4 sm:mb-6">
+              ${escapeHtml(cardText.s6Title)}
+            </h2>
+
+            <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-6 px-4">
+              
+              <!-- Left Doodle: Two Cute Characters Hugging with Pink Heart -->
+              <div class="flex flex-col items-center justify-center">
+                <svg class="w-36 sm:w-44 h-auto animate-float" viewBox="0 0 180 170" fill="none">
+                  <!-- Floating Pink Heart -->
+                  <path d="M90 36 C90 24, 70 24, 70 38 C70 50, 90 62, 90 62 C90 62, 110 50, 110 38 C110 24, 90 24, 90 36 Z" fill="#EC4899"/>
+                  <!-- Left Character -->
+                  <circle cx="66" cy="96" r="22" fill="#fff" stroke="#1F2937" stroke-width="2.8"/>
+                  <path d="M58 94 Q62 89 66 94" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round"/>
+                  <path d="M70 94 Q74 89 78 94" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round"/>
+                  <path d="M42 152 C42 126, 86 126, 88 152" fill="#fff" stroke="#1F2937" stroke-width="2.8"/>
+                  <!-- Right Character -->
+                  <circle cx="110" cy="98" r="21" fill="#fff" stroke="#1F2937" stroke-width="2.8"/>
+                  <circle cx="103" cy="96" r="2.2" fill="#1F2937"/>
+                  <circle cx="115" cy="96" r="2.2" fill="#1F2937"/>
+                  <path d="M92 152 C94 126, 136 126, 136 152" fill="#fff" stroke="#1F2937" stroke-width="2.8"/>
+                  <!-- Hugging Arm -->
+                  <path d="M74 134 Q96 130 112 138" stroke="#1F2937" stroke-width="2.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Center: Cute Green Dinosaur Hugging Giant Smartphone -->
+              <div class="flex flex-col items-center justify-center">
+                <svg class="w-56 sm:w-64 h-auto" viewBox="0 0 260 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Dino Spikes on Back -->
+                  <polygon points="184,96 206,106 188,120" fill="#A3E635" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+                  <polygon points="190,128 214,138 193,154" fill="#A3E635" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+                  <polygon points="194,162 218,172 195,188" fill="#A3E635" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+
+                  <!-- Green Dino Body & Tail -->
+                  <path d="M94 236 L94 94 C94 56, 158 54, 178 92 C192 120, 196 175, 200 206 C214 206, 228 202, 236 196 C234 218, 214 234, 186 236 Z"
+                    fill="#BEF264" stroke="#1F2937" stroke-width="3.2" stroke-linejoin="round"/>
+                  
+                  <!-- Cute Dino Eye & Cheek -->
+                  <circle cx="136" cy="90" r="4.5" fill="#1F2937"/>
+                  <ellipse cx="146" cy="98" rx="6" ry="3.5" fill="#86EFAC"/>
+
+                  <!-- Giant Grey Smartphone Being Hugged -->
+                  <g transform="rotate(-14 102 152)">
+                    <rect x="48" y="88" width="96" height="142" rx="18" fill="#CBD5E1" stroke="#1F2937" stroke-width="3.2"/>
+                    <rect x="55" y="95" width="82" height="128" rx="13" fill="#E2E8F0"/>
+                    <!-- Camera Bump -->
+                    <rect x="64" y="104" width="38" height="38" rx="10" fill="#94A3B8" stroke="#1F2937" stroke-width="2.2"/>
+                    <circle cx="75" cy="115" r="5" fill="#475569" stroke="#1F2937" stroke-width="1.8"/>
+                    <circle cx="75" cy="131" r="5" fill="#475569" stroke="#1F2937" stroke-width="1.8"/>
+                    <circle cx="91" cy="123" r="5" fill="#475569" stroke="#1F2937" stroke-width="1.8"/>
+                  </g>
+
+                  <!-- Dino's Little Green Arm Wrapping Around Phone -->
+                  <path d="M154 146 C128 144, 114 152, 114 162 C114 172, 130 174, 154 168" fill="#BEF264" stroke="#1F2937" stroke-width="3.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Right Doodle + next Button Underneath -->
+              <div class="flex flex-col items-center justify-center gap-4">
+                <svg class="w-36 sm:w-44 h-auto" viewBox="0 0 180 140" fill="none">
+                  <!-- Tiny Heart Above -->
+                  <path d="M90 22 C90 15, 79 15, 79 23 C79 30, 90 37, 90 37 C90 37, 101 30, 101 23 C101 15, 90 15, 90 22 Z" stroke="#1F2937" stroke-width="2" fill="#FDA4AF"/>
+                  <!-- Left Happy Character (> <) -->
+                  <circle cx="64" cy="74" r="21" fill="#fff" stroke="#1F2937" stroke-width="2.6"/>
+                  <polyline points="56,69 62,74 56,79" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="74,69 68,74 74,79" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M40 128 C40 104, 88 104, 88 128" fill="#fff" stroke="#1F2937" stroke-width="2.6"/>
+                  <!-- Right Character -->
+                  <circle cx="116" cy="74" r="21" fill="#fff" stroke="#1F2937" stroke-width="2.6"/>
+                  <circle cx="109" cy="73" r="2.3" fill="#1F2937"/>
+                  <circle cx="123" cy="73" r="2.3" fill="#1F2937"/>
+                  <path d="M92 128 C92 104, 140 104, 140 128" fill="#fff" stroke="#1F2937" stroke-width="2.6"/>
+                </svg>
+
+                <button onclick="playSound('click'); goToScreen(7)" class="pill-btn px-10 py-2.5 text-lg sm:text-xl">
+                  ${escapeHtml(cardText.nextBtn)}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+      } else if (currentScreen === 7) {
+        container.innerHTML = `
+          <div class="w-full max-w-5xl flex flex-col items-center justify-between my-auto py-2 ${animClass}">
+            <h2 class="font-fredoka text-2xl sm:text-4xl md:text-[2.6rem] font-bold text-[#1F2937] text-center mb-3 sm:mb-5">
+              ${escapeHtml(cardText.s7Title)}
+            </h2>
+
+            <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-6 px-4">
+              
+              <!-- Left Doodle: Line-Art Heart with "You're perfect." & Lipstick Kiss -->
+              <div class="flex flex-col items-center justify-center">
+                <div class="relative w-52 h-44 flex items-center justify-center animate-float">
+                  <svg class="w-full h-full" viewBox="0 0 210 180" fill="none">
+                    <!-- Main Crimson Heart -->
+                    <path d="M105 156 C105 156, 32 110, 32 62 C32 36, 52 20, 74 20 C89 20, 100 29, 105 39 C110 29, 121 20, 136 20 C158 20, 178 36, 178 62 C178 110, 105 156, 105 156 Z"
+                      stroke="#9E1B1B" stroke-width="2.2" fill="#FFFFFF"/>
+                    <!-- Small Filled Red Hearts Top-Left -->
+                    <path d="M44 26 C44 20, 34 20, 34 27 C34 33, 44 40, 44 40 C44 40, 54 33, 54 27 C54 20, 44 20, 44 26 Z" fill="#B91C1C"/>
+                    <path d="M64 14 C64 10, 58 10, 58 15 C58 19, 64 23, 64 23 C64 23, 70 19, 70 15 C70 10, 64 10, 64 14 Z" fill="#DC2626"/>
+                    <!-- Red Lipstick Kiss Mark Bottom-Right -->
+                    <g transform="translate(132, 120) rotate(-15)">
+                      <path d="M4 14 Q16 4 24 10 Q32 4 44 14 Q24 18 4 14 Z" fill="#B91C1C"/>
+                      <path d="M6 17 Q24 28 42 17 Q24 21 6 17 Z" fill="#991B1B"/>
+                    </g>
+                  </svg>
+                  <span class="absolute font-serif-title italic text-base sm:text-lg text-[#4B1D1D] font-medium px-6 text-center">
+                    ${escapeHtml(cardText.s7Quote)}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Center: Cute White Character Holding Bouquet of Red Roses -->
+              <div class="flex flex-col items-center justify-center">
+                <svg class="w-60 sm:w-72 h-auto" viewBox="0 0 280 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- White Character Body -->
+                  <path d="M74 242 C72 140, 82 76, 124 76 C166 76, 176 140, 174 242" fill="#FFFFFF" stroke="#1F2937" stroke-width="3.2" stroke-linecap="round"/>
+                  <!-- Happy Eyes & Smile -->
+                  <circle cx="110" cy="112" r="4" fill="#1F2937"/>
+                  <circle cx="138" cy="112" r="4" fill="#1F2937"/>
+                  <path d="M117 121 Q124 128 131 121" stroke="#1F2937" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+
+                  <!-- Green Stems & Leaves -->
+                  <path d="M188 152 L176 218" stroke="#15803D" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M202 154 L182 220" stroke="#16A34A" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M216 152 L188 218" stroke="#15803D" stroke-width="4" stroke-linecap="round"/>
+                  <!-- Lush Green Leaves -->
+                  <ellipse cx="166" cy="144" rx="16" ry="9" transform="rotate(-30 166 144)" fill="#22C55E" stroke="#14532D" stroke-width="2"/>
+                  <ellipse cx="234" cy="144" rx="16" ry="9" transform="rotate(30 234 144)" fill="#22C55E" stroke="#14532D" stroke-width="2"/>
+                  <ellipse cx="164" cy="174" rx="15" ry="8" transform="rotate(-15 164 174)" fill="#16A34A" stroke="#14532D" stroke-width="2"/>
+                  <ellipse cx="236" cy="174" rx="15" ry="8" transform="rotate(15 236 174)" fill="#16A34A" stroke="#14532D" stroke-width="2"/>
+
+                  <!-- Red Roses Cluster -->
+                  <g stroke="#7F1D1D" stroke-width="2">
+                    <circle cx="182" cy="126" r="16" fill="#DC2626"/>
+                    <path d="M175 126 Q182 118 189 126 Q182 134 175 126" fill="none"/>
+
+                    <circle cx="212" cy="124" r="16" fill="#B91C1C"/>
+                    <path d="M205 124 Q212 116 219 124 Q212 132 205 124" fill="none"/>
+
+                    <circle cx="198" cy="108" r="15" fill="#EF4444"/>
+                    <path d="M192 108 Q198 101 204 108" fill="none"/>
+
+                    <circle cx="174" cy="150" r="16" fill="#B91C1C"/>
+                    <path d="M167 150 Q174 142 181 150" fill="none"/>
+
+                    <circle cx="200" cy="148" r="17" fill="#DC2626"/>
+                    <path d="M193 148 Q200 140 207 148 Q200 156 193 148" fill="none"/>
+
+                    <circle cx="224" cy="150" r="15" fill="#991B1B"/>
+                    <path d="M218 150 Q224 143 230 150" fill="none"/>
+
+                    <circle cx="188" cy="170" r="15" fill="#DC2626"/>
+                    <circle cx="214" cy="170" r="15" fill="#B91C1C"/>
+                  </g>
+
+                  <!-- Character's Arm Holding the Bouquet -->
+                  <path d="M142 168 C162 174, 180 182, 188 190 C194 196, 184 206, 174 198 C164 190, 150 186, 138 184"
+                    fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Right Column: Kawaii Blushing Face Doodle + Replay Button -->
+              <div class="flex flex-col items-center justify-center gap-4">
+                <svg class="w-36 sm:w-44 h-auto animate-float" viewBox="0 0 180 145" fill="none">
+                  <!-- Floating Outline Hearts -->
+                  <path d="M90 22 C90 15, 79 15, 79 23 C79 30, 90 37, 90 37 C90 37, 101 30, 101 23 C101 15, 90 15, 90 22 Z" stroke="#1F2937" stroke-width="1.8"/>
+                  <path d="M40 50 C40 45, 32 45, 32 51 C32 56, 40 61, 40 61 C40 61, 48 56, 48 51 C48 45, 40 45, 40 50 Z" stroke="#1F2937" stroke-width="1.6"/>
+                  <path d="M142 46 C142 41, 134 41, 134 47 C134 52, 142 57, 142 57 C142 57, 150 52, 150 47 C150 41, 142 41, 142 46 Z" stroke="#1F2937" stroke-width="1.6"/>
+
+                  <!-- Round Kawaii Head -->
+                  <ellipse cx="90" cy="88" rx="34" ry="27" fill="#fff" stroke="#1F2937" stroke-width="2.6"/>
+                  <!-- Happy Squint Eyes (> <) -->
+                  <polyline points="70,82 78,87 70,92" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="110,82 102,87 110,92" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Cute Cat-like Mouth (ω) -->
+                  <path d="M83 92 Q86.5 97 90 92 Q93.5 97 97 92" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                  <!-- Pink Blush Marks -->
+                  <line x1="65" y1="96" x2="69" y2="92" stroke="#F43F5E" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="70" y1="97" x2="74" y2="93" stroke="#F43F5E" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="106" y1="97" x2="110" y2="93" stroke="#F43F5E" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="111" y1="96" x2="115" y2="92" stroke="#F43F5E" stroke-width="2" stroke-linecap="round"/>
+                  <!-- Little Hands Holding Cheeks -->
+                  <path d="M62 106 C56 100, 64 94, 70 102" fill="#fff" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round"/>
+                  <path d="M118 106 C124 100, 116 94, 110 102" fill="#fff" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>
+
+                <button onclick="handleReplay()" class="pill-btn px-8 py-2.5 text-base sm:text-lg">
+                  <span>${escapeHtml(cardText.replayBtn)}</span>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                    <polyline points="21 3 21 8 16 8"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ==========================================
+    // 5. LIVE "EDIT TEXT" MODAL HANDLERS
+    // ==========================================
+    function openEditModal() {
+      playSound('click');
+      document.getElementById('inp-s1Script').value = cardText.s1Script;
+      document.getElementById('inp-s1Main').value = cardText.s1Main;
+      document.getElementById('inp-wishLabel').value = cardText.wishLabel;
+      document.getElementById('inp-s2Title').value = cardText.s2Title;
+      document.getElementById('inp-s2Sub').value = cardText.s2Sub;
+      document.getElementById('inp-s3Title').value = cardText.s3Title;
+      document.getElementById('inp-s4Title').value = cardText.s4Title;
+      document.getElementById('inp-s5Top').value = cardText.s5Top;
+      document.getElementById('inp-s5Bottom').value = cardText.s5Bottom;
+      document.getElementById('inp-s6Title').value = cardText.s6Title;
+      document.getElementById('inp-s7Title').value = cardText.s7Title;
+      document.getElementById('inp-s7Quote').value = cardText.s7Quote;
+
+      const modal = document.getElementById('edit-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('edit-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveCustomText() {
+      playSound('magic');
+      cardText.s1Script = document.getElementById('inp-s1Script').value.trim() || DEFAULT_TEXT.s1Script;
+      cardText.s1Main = document.getElementById('inp-s1Main').value.trim() || DEFAULT_TEXT.s1Main;
+      cardText.wishLabel = document.getElementById('inp-wishLabel').value.trim() || DEFAULT_TEXT.wishLabel;
+      cardText.s2Title = document.getElementById('inp-s2Title').value.trim() || DEFAULT_TEXT.s2Title;
+      cardText.s2Sub = document.getElementById('inp-s2Sub').value.trim() || DEFAULT_TEXT.s2Sub;
+      cardText.s3Title = document.getElementById('inp-s3Title').value.trim() || DEFAULT_TEXT.s3Title;
+      cardText.s4Title = document.getElementById('inp-s4Title').value.trim() || DEFAULT_TEXT.s4Title;
+      cardText.s5Top = document.getElementById('inp-s5Top').value.trim() || DEFAULT_TEXT.s5Top;
+      cardText.s5Bottom = document.getElementById('inp-s5Bottom').value.trim() || DEFAULT_TEXT.s5Bottom;
+      cardText.s6Title = document.getElementById('inp-s6Title').value.trim() || DEFAULT_TEXT.s6Title;
+      cardText.s7Title = document.getElementById('inp-s7Title').value.trim() || DEFAULT_TEXT.s7Title;
+      cardText.s7Quote = document.getElementById('inp-s7Quote').value.trim() || DEFAULT_TEXT.s7Quote;
+
+      closeEditModal();
+      renderScreen(false);
+    }
+
+    function resetCustomText() {
+      playSound('click');
+      cardText = { ...DEFAULT_TEXT };
+      openEditModal();
+      renderScreen(false);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Initialize Screen 1 on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      goToScreen(1);
+    });
+  </script>
+</body>
+</html>
